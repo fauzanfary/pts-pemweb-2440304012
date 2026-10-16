@@ -42,6 +42,17 @@
                 </svg>
             </div>
 
+            <nav class="site-nav" aria-label="Navigasi Utama">
+                <a href="#katalog" class="nav-link nav-link-katalog">Katalog</a>
+                <a href="#usulan-buku" class="nav-link nav-btn-proposal" id="nav-proposal">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    <span>Usulan Buku</span>
+                </a>
+            </nav>
+
             <p class="student-id">
                 <strong>Ahmad Fauzan Al Ghifari</strong>
                 <span>NPM 2440304012</span>
@@ -51,27 +62,51 @@
 
     <main class="container">
 
+        <div class="category-tabs-container" aria-label="Filter cepat kategori buku">
+            <div class="category-tabs" role="tablist">
+                <button type="button" class="category-pill active" data-category="all" role="tab" aria-selected="true">
+                    <span>Semua Kategori</span>
+                    <span class="pill-count" id="count-all">30</span>
+                </button>
+                <button type="button" class="category-pill" data-category="Komik" role="tab" aria-selected="false">
+                    <span>Komik</span>
+                    <span class="pill-count" id="count-komik">10</span>
+                </button>
+                <button type="button" class="category-pill" data-category="Buku Belajar" role="tab" aria-selected="false">
+                    <span>Buku Belajar</span>
+                    <span class="pill-count" id="count-belajar">10</span>
+                </button>
+                <button type="button" class="category-pill" data-category="Novel" role="tab" aria-selected="false">
+                    <span>Novel</span>
+                    <span class="pill-count" id="count-novel">10</span>
+                </button>
+            </div>
+        </div>
+
         <section class="stats" aria-label="Statistik katalog">
             <div class="stat">
                 <p class="stat-label">Total Buku</p>
                 <p class="stat-value" id="stat-total">0 Buku</p>
+                <p class="stat-note" id="stat-total-note">Semua katalog aktif</p>
             </div>
             <div class="stat">
                 <p class="stat-label">Rata-rata Harga</p>
                 <p class="stat-value" id="stat-avg-price">Rp 0</p>
+                <p class="stat-note" id="stat-avg-note">Rata-rata per buku</p>
             </div>
             <div class="stat">
                 <p class="stat-label">Buku Termahal</p>
                 <p class="stat-value" id="stat-highest-price">Rp 0</p>
-                <p class="stat-note" id="stat-highest-title"></p>
+                <p class="stat-note" id="stat-highest-title">-</p>
             </div>
             <div class="stat">
                 <p class="stat-label">Kategori</p>
                 <p class="stat-value" id="stat-categories">0 Kategori</p>
+                <p class="stat-note" id="stat-categories-note">Komik · Belajar · Novel</p>
             </div>
         </section>
 
-        <section class="catalog" aria-labelledby="catalog-title">
+        <section class="catalog" id="katalog" aria-labelledby="catalog-title">
             <div class="section-head">
                 <h1 id="catalog-title">Rekomendasi Untukmu</h1>
 
@@ -121,9 +156,17 @@
             <div id="products-list" class="book-grid"></div>
         </section>
 
-        <section class="proposal" aria-labelledby="form-heading">
+        <section class="proposal" id="usulan-buku" aria-labelledby="form-heading">
             <div class="proposal-form-card">
-                <h2 id="form-heading">Usulkan Buku Baru</h2>
+                <div class="proposal-card-header">
+                    <h2 id="form-heading">Usulkan Buku Baru</h2>
+                    <a href="#katalog" class="back-link" title="Kembali ke katalog buku">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m15 18-6-6 6-6" />
+                        </svg>
+                        <span>Ke Katalog</span>
+                    </a>
+                </div>
                 <p class="muted">Buku yang belum ada di katalog? Kirim usulan untuk ditambahkan.</p>
 
                 <form id="procurement-form" novalidate>
@@ -193,6 +236,13 @@
             <p class="muted">Sampul buku: Open Library · Rating &amp; stok: DummyJSON</p>
         </div>
     </footer>
+
+    <a href="#usulan-buku" id="floating-nav" class="floating-nav-btn" aria-label="Lompat ke form usulan buku" title="Usulkan Buku Baru">
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14" />
+        </svg>
+        <span class="floating-nav-text">Usul Buku</span>
+    </a>
 
     <script src="js/utils.js"></script>
     <script src="js/app.js"></script>
