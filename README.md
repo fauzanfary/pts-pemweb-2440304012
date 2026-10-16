@@ -1,4 +1,4 @@
-# KatalogBuku Store - Mini Project PTS Pemrograman Web
+# KatalogBuku Store - Project PTS Pemrograman Web
 
 Repository ini berisi implementasi tugas Penilaian Tengah Semester (PTS) Mata Kuliah Pemrograman Web berbasis *Outcome-Based Education* (OBE). Proyek ini merupakan aplikasi *Interactive Data Dashboard & E-Commerce Catalog* yang terinspirasi dari antarmuka modern Gramedia.com, dibangun murni menggunakan HTML5, CSS3 modern, dan Vanilla JavaScript (ES6+).
 
