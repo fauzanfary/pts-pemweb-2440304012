@@ -26,10 +26,17 @@ const appState = {
 
 const DOM = {
   statTotal: document.getElementById('stat-total'),
+  statTotalNote: document.getElementById('stat-total-note'),
   statAvgPrice: document.getElementById('stat-avg-price'),
+  statAvgNote: document.getElementById('stat-avg-note'),
   statHighestPrice: document.getElementById('stat-highest-price'),
   statHighestTitle: document.getElementById('stat-highest-title'),
   statCategories: document.getElementById('stat-categories'),
+  statCategoriesNote: document.getElementById('stat-categories-note'),
+  countAll: document.getElementById('count-all'),
+  countKomik: document.getElementById('count-komik'),
+  countBelajar: document.getElementById('count-belajar'),
+  countNovel: document.getElementById('count-novel'),
 
   categoryFilter: document.getElementById('category-filter'),
   searchInput: document.getElementById('search-input'),
@@ -96,6 +103,7 @@ async function fetchProducts() {
 
     const { products } = await localResponse.json();
     appState.allProducts = products.map((book, i) => ({ ...book, ...liveData[i] }));
+    updateCategoryCounts();
     applyFilterAndSort();
   } catch (error) {
     console.error('Gagal memuat katalog:', error);
@@ -137,9 +145,17 @@ function createBookCard(book) {
 
 function renderProducts(products) {
   if (products.length === 0) {
-    const empty = document.createElement('p');
+    const empty = document.createElement('div');
     empty.className = 'empty-state';
-    empty.textContent = 'Buku tidak ditemukan. Coba kata kunci atau kategori lain.';
+    empty.innerHTML = `
+      <p>Buku tidak ditemukan. Coba kata kunci atau kategori lain.</p>
+      <a href="#usulan-buku" class="btn btn-outline empty-proposal-btn">
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        <span>Buku belum ada? Usulkan di sini</span>
+      </a>
+    `;
     DOM.productsList.replaceChildren(empty);
     return;
   }
@@ -148,20 +164,82 @@ function renderProducts(products) {
 
 function updateDashboardStats(products) {
   const stats = calculateStatistics(products);
+  const isAll = appState.category === 'all';
+
   DOM.statTotal.textContent = `${stats.total} Buku`;
+  if (DOM.statTotalNote) {
+    DOM.statTotalNote.textContent = isAll
+      ? 'Semua katalog aktif'
+      : `Kategori: ${appState.category}`;
+  }
+
   DOM.statAvgPrice.textContent = formatRupiah(stats.avgPrice);
+  if (DOM.statAvgNote) {
+    DOM.statAvgNote.textContent = isAll
+      ? 'Rata-rata seluruh buku'
+      : `Rata-rata ${appState.category}`;
+  }
+
   DOM.statHighestPrice.textContent = formatRupiah(stats.highestProduct?.priceIdr ?? 0);
-  DOM.statHighestTitle.textContent = stats.highestProduct?.title ?? '';
-  DOM.statCategories.textContent = `${stats.totalCategories} Kategori`;
+  DOM.statHighestTitle.textContent = stats.highestProduct?.title ?? '-';
+
+  if (isAll) {
+    DOM.statCategories.textContent = `${stats.totalCategories} Kategori`;
+    if (DOM.statCategoriesNote) {
+      DOM.statCategoriesNote.textContent = 'Komik · Belajar · Novel';
+    }
+  } else {
+    DOM.statCategories.textContent = appState.category;
+    if (DOM.statCategoriesNote) {
+      DOM.statCategoriesNote.textContent = `${stats.total} buku dalam kategori ini`;
+    }
+  }
 }
 
 // ---------- Filter, sorting, toggle view ----------
+
+function updateCategoryPills(activeCategory) {
+  const pills = document.querySelectorAll('.category-pill');
+  pills.forEach(pill => {
+    const isSelected = pill.dataset.category === activeCategory;
+    pill.classList.toggle('active', isSelected);
+    pill.setAttribute('aria-selected', String(isSelected));
+  });
+}
+
+function updateCategoryCounts() {
+  const counts = { all: appState.allProducts.length, Komik: 0, 'Buku Belajar': 0, Novel: 0 };
+  for (const book of appState.allProducts) {
+    if (counts[book.category] !== undefined) {
+      counts[book.category]++;
+    }
+  }
+  if (DOM.countAll) DOM.countAll.textContent = counts.all;
+  if (DOM.countKomik) DOM.countKomik.textContent = counts.Komik;
+  if (DOM.countBelajar) DOM.countBelajar.textContent = counts['Buku Belajar'];
+  if (DOM.countNovel) DOM.countNovel.textContent = counts.Novel;
+}
+
+function setupCategoryPills() {
+  const pills = document.querySelectorAll('.category-pill');
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      const selected = pill.dataset.category;
+      if (appState.category === selected) return;
+      appState.category = selected;
+      DOM.categoryFilter.value = selected;
+      applyFilterAndSort();
+    });
+  });
+}
 
 function applyFilterAndSort() {
   const filtered = filterProducts(appState.allProducts, appState.category, appState.query);
   const result = sortProducts(filtered, appState.sortBy);
 
   DOM.catalogTitle.textContent = appState.category === 'all' ? DEFAULT_TITLE : appState.category;
+  DOM.categoryFilter.value = appState.category;
+  updateCategoryPills(appState.category);
   renderProducts(result);
   updateDashboardStats(result);
 }
@@ -255,6 +333,74 @@ function handleClearHistory() {
   renderProposalHistory();
 }
 
+// ---------- Navigasi usulan buku ----------
+
+function setupProposalNavigation() {
+  const floatingNav = document.getElementById('floating-nav');
+  const proposalSection = document.getElementById('usulan-buku');
+  const formCard = document.querySelector('.proposal-form-card');
+
+  // Delegasi klik link usulan buku (termasuk link dinamis di empty state)
+  document.addEventListener('click', event => {
+    const targetLink = event.target.closest('a[href="#usulan-buku"]');
+    if (!targetLink) return;
+
+    // Jika datang dari tombol saran pencarian kosong, prefill nama buku dari query
+    if (targetLink.classList.contains('empty-proposal-btn') && appState.query) {
+      if (DOM.inputName && !DOM.inputName.value) {
+        DOM.inputName.value = appState.query;
+      }
+    }
+
+    // Efek highlight pulse pada card formulir
+    if (formCard) {
+      formCard.classList.remove('highlight-pulse');
+      void formCard.offsetWidth; // trigger reflow
+      formCard.classList.add('highlight-pulse');
+    }
+
+    // Fokus ke field judul buku setelah scroll selesai
+    setTimeout(() => {
+      DOM.inputName?.focus();
+    }, 450);
+  });
+
+  // Tombol navigasi melayang responsif (beralih fungsi antara usul buku dan ke atas)
+  if (floatingNav && proposalSection) {
+    const handleScroll = () => {
+      const rect = proposalSection.getBoundingClientRect();
+      const isNearProposal = rect.top <= window.innerHeight * 0.45;
+
+      if (isNearProposal) {
+        floatingNav.href = '#katalog';
+        floatingNav.setAttribute('aria-label', 'Kembali ke katalog buku');
+        floatingNav.setAttribute('title', 'Kembali ke katalog');
+        floatingNav.classList.add('is-back-top');
+        floatingNav.innerHTML = `
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m18 15-6-6-6 6"/>
+          </svg>
+          <span class="floating-nav-text">Ke Atas</span>
+        `;
+      } else {
+        floatingNav.href = '#usulan-buku';
+        floatingNav.setAttribute('aria-label', 'Lompat ke form usulan buku');
+        floatingNav.setAttribute('title', 'Usulkan Buku Baru');
+        floatingNav.classList.remove('is-back-top');
+        floatingNav.innerHTML = `
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <span class="floating-nav-text">Usul Buku</span>
+        `;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+  }
+}
+
 // ---------- Init ----------
 
 function initApp() {
@@ -281,6 +427,8 @@ function initApp() {
   DOM.form.addEventListener('submit', handleFormSubmit);
   DOM.btnClearHistory.addEventListener('click', handleClearHistory);
 
+  setupCategoryPills();
+  setupProposalNavigation();
   renderProposalHistory();
   fetchProducts();
 }
