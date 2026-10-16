@@ -1,5 +1,6 @@
 /**
- * Nama: Ahmad Fauzan Al Ghifari (NPM: 2440304012)
+ * KatalogBuku - fungsi murni (pure functions) untuk format, storage, statistik, filter, dan sorting.
+ * Mahasiswa: Ahmad Fauzan Al Ghifari (NPM: 2440304012)
  */
 
 const rupiahFormatter = new Intl.NumberFormat('id-ID', {
